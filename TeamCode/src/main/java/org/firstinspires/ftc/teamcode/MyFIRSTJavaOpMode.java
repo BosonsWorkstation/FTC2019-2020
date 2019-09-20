@@ -43,8 +43,6 @@ import com.qualcomm.robotcore.hardware.Servo;
                 double drive = -gamepad1.left_stick_y;
                 double turn = -gamepad1.right_stick_x;
                 double ClawUp = -gamepad2.left_stick_y;
-                double ClawClose = -gamepad2.right_trigger;
-                double ClawOpen = -gamepad2.left_trigger;
 
                 LeftPower = Range.clip(drive + turn, -1, 1);
                 RightPower = Range.clip(drive - turn, -1, 1);
