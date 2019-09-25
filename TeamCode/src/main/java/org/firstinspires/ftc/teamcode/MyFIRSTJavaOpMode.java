@@ -1,71 +1,108 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import android.app.Activity;
+import android.graphics.Color;
+import android.view.View;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.SwitchableLight;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 
-
-    @TeleOp(name = "Test OP Mode", group = "Linear Opmode")
+    @TeleOp(name = "Basic Linear Opmode SHAWNBRANCH", group = "Linear Opmode")
     public class MyFIRSTJavaOpMode extends LinearOpMode {
-        private DcMotor RightWheel;
-        private DcMotor LeftWheel;
-        private DcMotor ClawArm;
-        private Servo Claw;
+        NormalizedColorSensor colorSensor;
+        private DcMotor rightWheel;
+        private DcMotor leftWheel;
+        private DcMotor clawArm;
+        private Servo claw;
         private ElapsedTime runtime = new ElapsedTime();
 
         @Override
-        public void runOpMode() {
+        public void runOpMode()  {
             telemetry.addData("Status", "Initializing");
             telemetry.update();
 
-            RightWheel = hardwareMap.dcMotor.get("Right Wheel");
-            LeftWheel = hardwareMap.dcMotor.get("Left Wheel");
-            ClawArm = hardwareMap.dcMotor.get("Claw Arm");
-            Claw = hardwareMap.servo.get("Claw");
+            //getting the names of the hardware in the configuration profile from the phones
+            rightWheel = hardwareMap.dcMotor.get("Right Wheel");
+            leftWheel = hardwareMap.dcMotor.get("Left Wheel");
+            clawArm = hardwareMap.dcMotor.get("Claw Arm");
+            claw = hardwareMap.servo.get("Claw");
 
-            LeftWheel.setDirection(DcMotor.Direction.FORWARD);
-            RightWheel.setDirection(DcMotor.Direction.REVERSE);
+            //because one motor will be flipped, set one opposite of the other
+            leftWheel.setDirection(DcMotor.Direction.FORWARD);
+            rightWheel.setDirection(DcMotor.Direction.REVERSE);
 
             telemetry.addData("Status", "Initialized");
             telemetry.update();
+
             //Driver Presses Play
             waitForStart();
+
             //run
-            double LeftPower = 0.0;
-            double RightPower = 0.0;
-            double ClawUpPower = 0.0;
+            double leftPower = 0.0;
+            double rightPower = 0.0;
+            double clawUpPower = 0.0;
             while (opModeIsActive()) {
+
+                //controller mapping
                 double drive = -gamepad1.left_stick_y;
                 double turn = -gamepad1.right_stick_x;
                 double ClawUp = -gamepad2.left_stick_y;
 
-                LeftPower = Range.clip(drive + turn, -1, 1);
-                RightPower = Range.clip(drive - turn, -1, 1);
-                ClawUpPower = Range.clip(ClawUp, -1, 1);
-                LeftWheel.setPower(LeftPower);
-                RightWheel.setPower(RightPower);
-                ClawArm.setPower(ClawUpPower);
+                //set max and min power
+                leftPower = Range.clip(drive + turn, -1, 1);
+                rightPower = Range.clip(drive - turn, -1, 1);
+                clawUpPower = Range.clip(ClawUp, -0.5, 0.5);
+
+                //set power from the controller input
+                leftWheel.setPower(leftPower);
+                rightWheel.setPower(rightPower);
+                clawArm.setPower(clawUpPower);
 
                 //servo
                 if (gamepad1.y) {
-                    Claw.setPosition(1.0);
+                    claw.setPosition(1.0);
                 }
                 else if (gamepad1.a) {
-                    Claw.setPosition(1.0);
+                    claw.setPosition(1.0);
                 }
-                telemetry.addData("Target Power", RightPower);
-                telemetry.addData("Target Power", LeftPower);
-                telemetry.addData("Motor Power", RightWheel.getPower());
-                telemetry.addData("Motor Power", LeftWheel.getPower());
-                telemetry.addData("ServoPosition", Claw.getPosition());
+
+
+                //change color off app based on color sensor input
+                //FIND OUT WHERE TO PUT THIS
+                View relativeLayout;
+                int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("Relative Layout", "id", hardwareMap.appContext.getPackageName());
+                relativeLayout = ((Activity)hardwareMap.appContext).findViewById(relativeLayoutId);
+                relativeLayout.setBackgroundColor(Color.WHITE);
+                //the type of color set
+                float[] hsvValues = new float[3];
+                final float values[] = hsvValues;
+                //keeps the button state
+                boolean bPrevState = false;
+                boolean bCurrState = false;
+
+                colorSensor = hardwareMap.get(NormalizedColorSensor.class, "Color Sensor");
+
+                //turns on the light if it isn't already on
+                if (colorSensor instanceof SwitchableLight){
+                    ((SwitchableLight)colorSensor).enableLight(true);
+                }
+
+                //send data to phone screen
+                telemetry.addData("Target Power", rightPower);
+                telemetry.addData("Target Power", leftPower);
+                telemetry.addData("Motor Power", rightWheel.getPower());
+                telemetry.addData("Motor Power", leftWheel.getPower());
+                telemetry.addData("ServoPosition", claw.getPosition());
                 telemetry.addData("runtime", runtime.toString());
                 telemetry.addData("Status", "Running");
-                telemetry.addData("Motors", "left (%.2f), right (%.2f)", LeftPower, RightPower);
+                telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
                 telemetry.update();
             }
         }
