@@ -22,9 +22,39 @@ import com.qualcomm.robotcore.hardware.Servo;
         private DcMotor clawArm;
         private Servo claw;
         private ElapsedTime runtime = new ElapsedTime();
+        View relativeLayout;
 
-        @Override
-        public void runOpMode()  {
+
+        @Override public void runOpMode() throws InterruptedException {
+            int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("Relative Layout", "id", hardwareMap.appContext.getPackageName());
+            relativeLayout = ((Activity)hardwareMap.appContext).findViewById(relativeLayoutId);
+
+            try {
+                runSample();
+            } finally {
+                relativeLayout.post(new Runnable() {
+                    public void run() {
+                        relativeLayout.setBackgroundColor(Color.WHITE);
+                    }
+                });
+            }
+            protected void runSample() throws InterruptedException {
+            //the type of color set
+            float[] hsvValues = new float[3];
+            final float values[] = hsvValues;
+            //keeps the button state
+            boolean bPrevState = false;
+            boolean bCurrState = false;
+
+
+            colorSensor = hardwareMap.get(NormalizedColorSensor.class, "Color Sensor");
+
+            //turns on the light if it isn't already on
+            if (colorSensor instanceof SwitchableLight) {
+                ((SwitchableLight) colorSensor).enableLight(true);
+            }
+        }
+
             telemetry.addData("Status", "Initializing");
             telemetry.update();
 
@@ -71,27 +101,6 @@ import com.qualcomm.robotcore.hardware.Servo;
                 }
                 else if (gamepad1.a) {
                     claw.setPosition(1.0);
-                }
-
-
-                //change color off app based on color sensor input
-                //FIND OUT WHERE TO PUT THIS
-                View relativeLayout;
-                int relativeLayoutId = hardwareMap.appContext.getResources().getIdentifier("Relative Layout", "id", hardwareMap.appContext.getPackageName());
-                relativeLayout = ((Activity)hardwareMap.appContext).findViewById(relativeLayoutId);
-                relativeLayout.setBackgroundColor(Color.WHITE);
-                //the type of color set
-                float[] hsvValues = new float[3];
-                final float values[] = hsvValues;
-                //keeps the button state
-                boolean bPrevState = false;
-                boolean bCurrState = false;
-
-                colorSensor = hardwareMap.get(NormalizedColorSensor.class, "Color Sensor");
-
-                //turns on the light if it isn't already on
-                if (colorSensor instanceof SwitchableLight){
-                    ((SwitchableLight)colorSensor).enableLight(true);
                 }
 
                 //send data to phone screen
