@@ -22,6 +22,7 @@ import com.qualcomm.robotcore.hardware.Servo;
         public void runOpMode() {
             telemetry.addData("Status", "Initializing");
             telemetry.update();
+            telemetry.addData("TEst","Test ");
 
             RightWheel = hardwareMap.dcMotor.get("Right Wheel");
             LeftWheel = hardwareMap.dcMotor.get("Left Wheel");
